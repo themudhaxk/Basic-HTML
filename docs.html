@@ -1,0 +1,2464 @@
+<!DOCTYPE html><html><head><meta charset='UTF-8'><title>CITI Service API Documentation</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f4f6f8;
+    margin: 0;
+    padding: 2rem;
+    color: #333;
+  }
+
+  h1, h2, h3 {
+    color: #2c3e50;
+  }
+
+  pre {
+    background: #2d2d2d;
+    color: #f8f8f2;
+    padding: 1rem;
+    border-radius: 5px;
+    overflow-x: auto;
+  }
+
+  code {
+    font-family: 'Courier New', Courier, monospace;
+  }
+
+  a {
+    color: #3498db;
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+  }
+
+  th, td {
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+  }
+
+  th {
+    background: #ecf0f1;
+  }
+
+  section {
+    margin-bottom: 2rem;
+  }
+
+  .container {
+    max-width: 960px;
+    margin: auto;
+    background: #fff;
+    padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-radius: 8px;
+  }
+</style>
+</head><body><div class='container'><h3>CITI Service API Documentation</h3>
+
+<p>This document provides comprehensive details about the Service Marketplace API endpoints, including request parameters, required headers, and response formats.</p>
+
+<h2>Base URL</h2>
+
+<p><code>plaintext
+http://localhost:5000
+</code></p>
+
+<h2>Authentication</h2>
+
+<p>Most endpoints require authentication using JWT tokens.</p>
+
+<p><strong>Authentication Header Format:</strong></p>
+
+<p><code>plaintext
+Authorization: Bearer {token}
+</code></p>
+
+<p>Where <code>{token}</code> is the JWT token received from the login or refresh token endpoints.</p>
+
+<h2>Table of Contents</h2>
+
+<ol>
+<li><a href="#1-authentication">Authentication</a></li>
+<li><a href="#2-users">Users</a></li>
+<li><a href="#3-vendors">Vendors</a></li>
+<li><a href="#4-services">Services</a></li>
+<li><a href="#5-bookings">Bookings</a></li>
+<li><a href="#6-chat">Chat</a></li>
+<li><a href="#7-reviews">Reviews</a></li>
+<li><a href="#8-payments">Payments</a></li>
+<li><a href="#9-notifications">Notifications</a></li>
+<li><a href="#10-referrals">Referrals</a></li>
+<li><a href="#11-admin">Admin</a></li>
+</ol>
+
+<h2>1. Authentication</h2>
+
+<h3>Register User</h3>
+
+<p><strong>Endpoint:</strong> <code>POST /api/auth/register</code></p>
+
+<p><strong>Request Body:</strong></p>
+
+<p><code>json
+{
+  "email": string,         // Required: Valid email address
+  "password": string,      // Required: Min 8 chars, 1 uppercase, 1 lowercase, 1 number
+  "fullName": string,      // Required: User's full name
+  "phone": string,         // Optional: Phone number (format: +1234567890)
+  "role": string,          // Optional: "client" (default), "vendor", "admin"
+  "referralCode": string   // Optional: Referral code from existing user
+}
+</code></p>
+
+<p><strong>Response (201):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "message": "User registered successfully. Please check your email to verify your account.",
+  "data": {
+    "_id": string,
+    "email": string,
+    "fullName": string,
+    "role": string,
+    "emailVerified": boolean,
+    "token": string,
+    "refreshToken": string
+  }
+}
+</code></p>
+
+<h3>Login</h3>
+
+<p><strong>Endpoint:</strong> <code>POST /api/auth/login</code></p>
+
+<p><strong>Request Body:</strong></p>
+
+<p><code>json
+{
+  "email": string,     // Required: User's email
+  "password": string   // Required: User's password
+}
+</code></p>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "message": "Login successful",
+  "data": {
+    "_id": string,
+    "email": string,
+    "fullName": string,
+    "role": string,
+    "token": string,
+    "refreshToken": string
+  }
+}
+</code></p>
+
+<h3>Refresh Token</h3>
+
+<p><strong>Endpoint:</strong> <code>POST /api/auth/refresh-token</code></p>
+
+<p><strong>Request Body:</strong></p>
+
+<p><code>json
+{
+  "refreshToken": string  // Required: Refresh token from login/register
+}
+</code></p>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "message": "Token refreshed successfully",
+  "data": {
+    "token": string,
+    "refreshToken": string
+  }
+}
+</code></p>
+
+<h3>Verify Email</h3>
+
+<p><strong>Endpoint:</strong> <code>GET /api/auth/verify-email/:token</code></p>
+
+<p><strong>URL Parameters:</strong></p>
+
+<ul>
+<li><code>token</code>: Email verification token sent to user's email</li>
+</ul>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "message": "Email verified successfully"
+}
+</code></p>
+
+<h3>Forgot Password</h3>
+
+<p><strong>Endpoint:</strong> <code>POST /api/auth/forgot-password</code></p>
+
+<p><strong>Request Body:</strong></p>
+
+<p><code>json
+{
+  "email": string  // Required: User's registered email
+}
+</code></p>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "message": "Password reset email sent"
+}
+</code></p>
+
+<h3>Reset Password</h3>
+
+<p><strong>Endpoint:</strong> <code>PUT /api/auth/reset-password/:token</code></p>
+
+<p><strong>URL Parameters:</strong></p>
+
+<ul>
+<li><code>token</code>: Password reset token from email</li>
+</ul>
+
+<p><strong>Request Body:</strong></p>
+
+<p><code>json
+{
+  "password": string  // Required: New password (min 8 chars, 1 uppercase, 1 lowercase, 1 number)
+}
+</code></p>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "message": "Password reset successful"
+}
+</code></p>
+
+<h3>Logout</h3>
+
+<p><strong>Endpoint:</strong> <code>POST /api/auth/logout</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token</li>
+</ul>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "message": "Logged out successfully"
+}
+</code></p>
+
+<h3>OAuth Routes</h3>
+
+<ul>
+<li><strong>Google Login:</strong> <code>GET /api/auth/google</code></li>
+<li><strong>Google Callback:</strong> <code>GET /api/auth/google/callback</code></li>
+<li><strong>Apple Login:</strong> <code>GET /api/auth/apple</code></li>
+<li><strong>Apple Callback:</strong> <code>GET /api/auth/apple/callback</code></li>
+<li><strong>Microsoft Login:</strong> <code>GET /api/auth/microsoft</code></li>
+<li><strong>Microsoft Callback:</strong> <code>GET /api/auth/microsoft/callback</code></li>
+</ul>
+
+<h2>2. Users</h2>
+
+<h3>Get User Profile</h3>
+
+<p><strong>Endpoint:</strong> <code>GET /api/users/profile</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token</li>
+</ul>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "data": {
+    "user": {
+      "_id": string,
+      "email": string,
+      "fullName": string,
+      "phone": string,
+      "photoUrl": string,
+      "role": string,
+      "emailVerified": boolean,
+      "createdAt": string,
+      "updatedAt": string
+    },
+    "vendorProfile": object | null  // Present if user is a vendor
+  }
+}
+</code></p>
+
+<h3>Update User Profile</h3>
+
+<p><strong>Endpoint:</strong> <code>PUT /api/users/profile</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token</li>
+<li><code>Content-Type</code>: multipart/form-data (if uploading photo)</li>
+</ul>
+
+<p><strong>Request Body:</strong></p>
+
+<p><code>plaintext
+fullName: string           // Optional: User's full name
+phone: string              // Optional: User's phone number
+photo: File                // Optional: Profile photo file
+</code></p>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "message": "Profile updated successfully",
+  "data": {
+    "_id": string,
+    "email": string,
+    "fullName": string,
+    "phone": string,
+    "photoUrl": string,
+    "role": string
+  }
+}
+</code></p>
+
+<h3>Update User KYC Information</h3>
+
+<p><strong>Endpoint:</strong> <code>PUT /api/users/kyc</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token</li>
+</ul>
+
+<p><strong>Request Body:</strong></p>
+
+<p><code>json
+{
+  "bvn": string,  // Optional: Bank Verification Number (Nigeria)
+  "nin": string   // Optional: National Identification Number (Nigeria)
+}
+</code></p>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "message": "KYC information updated successfully"
+}
+</code></p>
+
+<h3>Change Password</h3>
+
+<p><strong>Endpoint:</strong> <code>PUT /api/users/change-password</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token</li>
+</ul>
+
+<p><strong>Request Body:</strong></p>
+
+<p><code>json
+{
+  "currentPassword": string,  // Required: Current password
+  "newPassword": string       // Required: New password (min 8 chars, 1 uppercase, 1 lowercase, 1 number)
+}
+</code></p>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "message": "Password changed successfully"
+}
+</code></p>
+
+<h3>Get User Referrals</h3>
+
+<p><strong>Endpoint:</strong> <code>GET /api/users/referrals</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token</li>
+</ul>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "count": number,
+  "data": [
+    {
+      "_id": string,
+      "referrerId": string,
+      "referredId": {
+        "_id": string,
+        "fullName": string,
+        "email": string
+      },
+      "rewardGranted": boolean,
+      "createdAt": string,
+      "updatedAt": string
+    }
+  ]
+}
+</code></p>
+
+<h3>Delete User Account</h3>
+
+<p><strong>Endpoint:</strong> <code>DELETE /api/users</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token</li>
+</ul>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "message": "Account deleted successfully"
+}
+</code></p>
+
+<h2>3. Vendors</h2>
+
+<h3>Register as Vendor</h3>
+
+<p><strong>Endpoint:</strong> <code>POST /api/vendors/register</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token</li>
+<li><code>Content-Type</code>: multipart/form-data</li>
+</ul>
+
+<p><strong>Request Body:</strong></p>
+
+<p><code>plaintext
+businessName: string                // Required: Vendor's business name
+bio: string                         // Required: Business description
+logo: File                          // Optional: Business logo
+certifications: File[]              // Optional: Certification documents (up to 5)
+</code></p>
+
+<p><strong>Response (201):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "message": "Vendor profile created successfully. Awaiting admin approval.",
+  "data": {
+    "_id": string,
+    "userId": string,
+    "businessName": string,
+    "bio": string,
+    "logoUrl": string,
+    "certificationUrls": string[],
+    "verified": boolean,
+    "servicesOffered": string[],
+    "rating": number,
+    "createdAt": string,
+    "updatedAt": string
+  }
+}
+</code></p>
+
+<h3>Get Vendor Profile</h3>
+
+<p><strong>Endpoint:</strong> <code>GET /api/vendors/profile</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token (vendor only)</li>
+</ul>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "data": {
+    "_id": string,
+    "userId": string,
+    "businessName": string,
+    "bio": string,
+    "logoUrl": string,
+    "certificationUrls": string[],
+    "verified": boolean,
+    "servicesOffered": string[],
+    "rating": number,
+    "createdAt": string,
+    "updatedAt": string
+  }
+}
+</code></p>
+
+<h3>Update Vendor Profile</h3>
+
+<p><strong>Endpoint:</strong> <code>PUT /api/vendors/profile</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token (vendor only)</li>
+<li><code>Content-Type</code>: multipart/form-data</li>
+</ul>
+
+<p><strong>Request Body:</strong></p>
+
+<p><code>plaintext
+businessName: string                // Optional: Vendor's business name
+bio: string                         // Optional: Business description
+logo: File                          // Optional: Business logo
+certifications: File[]              // Optional: Additional certification documents
+</code></p>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "message": "Vendor profile updated successfully",
+  "data": {
+    "_id": string,
+    "userId": string,
+    "businessName": string,
+    "bio": string,
+    "logoUrl": string,
+    "certificationUrls": string[],
+    "verified": boolean,
+    "servicesOffered": string[],
+    "rating": number,
+    "createdAt": string,
+    "updatedAt": string
+  }
+}
+</code></p>
+
+<h3>Get Vendor Dashboard</h3>
+
+<p><strong>Endpoint:</strong> <code>GET /api/vendors/dashboard</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token (vendor only)</li>
+</ul>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "data": {
+    "servicesCount": number,
+    "bookings": {
+      "total": number,
+      "pending": number,
+      "confirmed": number,
+      "completed": number,
+      "cancelled": number
+    },
+    "earnings": {
+      "total": number
+    },
+    "reviews": {
+      "count": number,
+      "averageRating": number
+    }
+  }
+}
+</code></p>
+
+<h3>Get Vendor by ID (Public Profile)</h3>
+
+<p><strong>Endpoint:</strong> <code>GET /api/vendors/:id</code></p>
+
+<p><strong>URL Parameters:</strong></p>
+
+<ul>
+<li><code>id</code>: Vendor ID</li>
+</ul>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "data": {
+    "vendor": {
+      "_id": string,
+      "userId": string,
+      "businessName": string,
+      "bio": string,
+      "logoUrl": string,
+      "verified": boolean,
+      "rating": number
+    },
+    "user": {
+      "fullName": string,
+      "photoUrl": string
+    },
+    "services": [
+      {
+        "_id": string,
+        "title": string,
+        "description": string,
+        "price": number,
+        "category": string,
+        "images": string[]
+      }
+    ],
+    "reviews": [
+      {
+        "_id": string,
+        "clientId": {
+          "_id": string,
+          "fullName": string,
+          "photoUrl": string
+        },
+        "rating": number,
+        "comment": string,
+        "createdAt": string
+      }
+    ]
+  }
+}
+</code></p>
+
+<h3>Get All Vendors</h3>
+
+<p><strong>Endpoint:</strong> <code>GET /api/vendors</code></p>
+
+<p><strong>Query Parameters:</strong></p>
+
+<ul>
+<li><code>category</code>: Filter by service category</li>
+<li><code>rating</code>: Filter by minimum rating</li>
+<li><code>verified</code>: Filter by verification status (admin only)</li>
+<li><code>page</code>: Page number (default: 1)</li>
+<li><code>limit</code>: Results per page (default: 10)</li>
+</ul>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "count": number,
+  "total": number,
+  "pagination": {
+    "page": number,
+    "limit": number,
+    "pages": number
+  },
+  "data": [
+    {
+      "_id": string,
+      "userId": string,
+      "businessName": string,
+      "bio": string,
+      "logoUrl": string,
+      "verified": boolean,
+      "rating": number,
+      "user": {
+        "fullName": string,
+        "photoUrl": string
+      }
+    }
+  ]
+}
+</code></p>
+
+<h2>4. Services</h2>
+
+<h3>Create a Service</h3>
+
+<p><strong>Endpoint:</strong> <code>POST /api/services</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token (vendor only)</li>
+<li><code>Content-Type</code>: multipart/form-data</li>
+</ul>
+
+<p><strong>Request Body:</strong></p>
+
+<p><code>plaintext
+title: string                // Required: Service title
+description: string          // Required: Service description
+price: number                // Required: Service price
+category: string             // Required: Service category
+availability: object         // Optional: Availability schedule
+images: File[]               // Optional: Service images (up to 5)
+</code></p>
+
+<p><strong>Response (201):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "message": "Service created successfully",
+  "data": {
+    "_id": string,
+    "vendorId": string,
+    "title": string,
+    "description": string,
+    "price": number,
+    "category": string,
+    "images": string[],
+    "availability": object,
+    "createdAt": string,
+    "updatedAt": string
+  }
+}
+</code></p>
+
+<h3>Get All Services</h3>
+
+<p><strong>Endpoint:</strong> <code>GET /api/services</code></p>
+
+<p><strong>Query Parameters:</strong></p>
+
+<ul>
+<li><code>category</code>: Filter by category</li>
+<li><code>minPrice</code>: Filter by minimum price</li>
+<li><code>maxPrice</code>: Filter by maximum price</li>
+<li><code>vendorId</code>: Filter by vendor</li>
+<li><code>page</code>: Page number (default: 1)</li>
+<li><code>limit</code>: Results per page (default: 10)</li>
+</ul>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "count": number,
+  "total": number,
+  "pagination": {
+    "page": number,
+    "limit": number,
+    "pages": number
+  },
+  "data": [
+    {
+      "_id": string,
+      "vendorId": string,
+      "title": string,
+      "description": string,
+      "price": number,
+      "category": string,
+      "images": string[],
+      "vendor": {
+        "_id": string,
+        "businessName": string,
+        "rating": number,
+        "user": {
+          "fullName": string
+        }
+      }
+    }
+  ]
+}
+</code></p>
+
+<h3>Get Service by ID</h3>
+
+<p><strong>Endpoint:</strong> <code>GET /api/services/:id</code></p>
+
+<p><strong>URL Parameters:</strong></p>
+
+<ul>
+<li><code>id</code>: Service ID</li>
+</ul>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "data": {
+    "service": {
+      "_id": string,
+      "vendorId": string,
+      "title": string,
+      "description": string,
+      "price": number,
+      "category": string,
+      "images": string[],
+      "availability": object
+    },
+    "vendor": {
+      "_id": string,
+      "businessName": string,
+      "bio": string,
+      "logoUrl": string,
+      "rating": number,
+      "user": {
+        "fullName": string,
+        "photoUrl": string
+      }
+    },
+    "reviews": [
+      {
+        "_id": string,
+        "clientId": {
+          "fullName": string,
+          "photoUrl": string
+        },
+        "rating": number,
+        "comment": string,
+        "createdAt": string
+      }
+    ]
+  }
+}
+</code></p>
+
+<h3>Update Service</h3>
+
+<p><strong>Endpoint:</strong> <code>PUT /api/services/:id</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token (vendor only)</li>
+<li><code>Content-Type</code>: multipart/form-data</li>
+</ul>
+
+<p><strong>URL Parameters:</strong></p>
+
+<ul>
+<li><code>id</code>: Service ID</li>
+</ul>
+
+<p><strong>Request Body:</strong></p>
+
+<p><code>plaintext
+title: string                // Optional: Service title
+description: string          // Optional: Service description
+price: number                // Optional: Service price
+category: string             // Optional: Service category
+images: File[]               // Optional: Additional service images
+</code></p>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "message": "Service updated successfully",
+  "data": {
+    "_id": string,
+    "vendorId": string,
+    "title": string,
+    "description": string,
+    "price": number,
+    "category": string,
+    "images": string[],
+    "availability": object,
+    "createdAt": string,
+    "updatedAt": string
+  }
+}
+</code></p>
+
+<h3>Delete Service</h3>
+
+<p><strong>Endpoint:</strong> <code>DELETE /api/services/:id</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token (vendor only)</li>
+</ul>
+
+<p><strong>URL Parameters:</strong></p>
+
+<ul>
+<li><code>id</code>: Service ID</li>
+</ul>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "message": "Service deleted successfully"
+}
+</code></p>
+
+<h3>Update Service Availability</h3>
+
+<p><strong>Endpoint:</strong> <code>PUT /api/services/:id/availability</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token (vendor only)</li>
+</ul>
+
+<p><strong>URL Parameters:</strong></p>
+
+<ul>
+<li><code>id</code>: Service ID</li>
+</ul>
+
+<p><strong>Request Body:</strong></p>
+
+<p><code>json
+{
+  "availability": {
+    "2023-12-01": ["09:00", "10:00", "11:00"],
+    "2023-12-02": ["14:00", "15:00", "16:00"]
+  }
+}
+</code></p>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "message": "Service availability updated successfully",
+  "data": {
+    "_id": string,
+    "vendorId": string,
+    "title": string,
+    "description": string,
+    "price": number,
+    "category": string,
+    "images": string[],
+    "availability": object,
+    "createdAt": string,
+    "updatedAt": string
+  }
+}
+</code></p>
+
+<h2>5. Bookings</h2>
+
+<h3>Create a Booking</h3>
+
+<p><strong>Endpoint:</strong> <code>POST /api/bookings</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token (client only)</li>
+</ul>
+
+<p><strong>Request Body:</strong></p>
+
+<p><code>json
+{
+  "serviceId": string,    // Required: Service ID
+  "date": string,         // Required: Booking date (YYYY-MM-DD)
+  "time": string,         // Required: Booking time (HH:MM)
+  "location": string,     // Required: Booking location
+  "guests": number        // Optional: Number of guests (default: 1)
+}
+</code></p>
+
+<p><strong>Response (201):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "message": "Booking created successfully",
+  "data": {
+    "_id": string,
+    "clientId": string,
+    "vendorId": string,
+    "serviceId": string,
+    "date": string,
+    "time": string,
+    "location": string,
+    "guests": number,
+    "status": string,
+    "paymentStatus": string,
+    "createdAt": string,
+    "updatedAt": string
+  }
+}
+</code></p>
+
+<h3>Get Client Bookings</h3>
+
+<p><strong>Endpoint:</strong> <code>GET /api/bookings/client</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token (client only)</li>
+</ul>
+
+<p><strong>Query Parameters:</strong></p>
+
+<ul>
+<li><code>status</code>: Filter by status (pending, confirmed, cancelled, completed)</li>
+<li><code>page</code>: Page number (default: 1)</li>
+<li><code>limit</code>: Results per page (default: 10)</li>
+</ul>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "count": number,
+  "total": number,
+  "pagination": {
+    "page": number,
+    "limit": number,
+    "pages": number
+  },
+  "data": [
+    {
+      "_id": string,
+      "clientId": string,
+      "vendorId": string,
+      "serviceId": string,
+      "date": string,
+      "time": string,
+      "location": string,
+      "guests": number,
+      "status": string,
+      "paymentStatus": string,
+      "createdAt": string,
+      "updatedAt": string,
+      "service": {
+        "_id": string,
+        "title": string,
+        "price": number,
+        "category": string
+      },
+      "vendor": {
+        "_id": string,
+        "businessName": string,
+        "user": {
+          "fullName": string,
+          "photoUrl": string
+        }
+      }
+    }
+  ]
+}
+</code></p>
+
+<h3>Get Vendor Bookings</h3>
+
+<p><strong>Endpoint:</strong> <code>GET /api/bookings/vendor</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token (vendor only)</li>
+</ul>
+
+<p><strong>Query Parameters:</strong></p>
+
+<ul>
+<li><code>status</code>: Filter by status (pending, confirmed, cancelled, completed)</li>
+<li><code>page</code>: Page number (default: 1)</li>
+<li><code>limit</code>: Results per page (default: 10)</li>
+</ul>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "count": number,
+  "total": number,
+  "pagination": {
+    "page": number,
+    "limit": number,
+    "pages": number
+  },
+  "data": [
+    {
+      "_id": string,
+      "clientId": string,
+      "vendorId": string,
+      "serviceId": string,
+      "date": string,
+      "time": string,
+      "location": string,
+      "guests": number,
+      "status": string,
+      "paymentStatus": string,
+      "createdAt": string,
+      "updatedAt": string,
+      "service": {
+        "_id": string,
+        "title": string,
+        "price": number,
+        "category": string
+      },
+      "client": {
+        "fullName": string,
+        "photoUrl": string
+      }
+    }
+  ]
+}
+</code></p>
+
+<h3>Get Booking by ID</h3>
+
+<p><strong>Endpoint:</strong> <code>GET /api/bookings/:id</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token</li>
+</ul>
+
+<p><strong>URL Parameters:</strong></p>
+
+<ul>
+<li><code>id</code>: Booking ID</li>
+</ul>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "data": {
+    "booking": {
+      "_id": string,
+      "clientId": string,
+      "vendorId": string,
+      "serviceId": string,
+      "date": string,
+      "time": string,
+      "location": string,
+      "guests": number,
+      "status": string,
+      "paymentStatus": string,
+      "createdAt": string,
+      "updatedAt": string
+    },
+    "service": {
+      "_id": string,
+      "title": string,
+      "description": string,
+      "price": number,
+      "category": string,
+      "images": string[]
+    },
+    "vendor": {
+      "_id": string,
+      "businessName": string,
+      "logoUrl": string,
+      "rating": number,
+      "user": {
+        "fullName": string,
+        "photoUrl": string
+      }
+    },
+    "client": {
+      "fullName": string,
+      "photoUrl": string
+    },
+    "transaction": {
+      "_id": string,
+      "bookingId": string,
+      "amount": number,
+      "method": string,
+      "escrowHeld": boolean,
+      "releasedToVendor": boolean,
+      "reference": string,
+      "createdAt": string,
+      "updatedAt": string
+    }
+  }
+}
+</code></p>
+
+<h3>Update Booking Status (Vendor)</h3>
+
+<p><strong>Endpoint:</strong> <code>PUT /api/bookings/:id/status</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token (vendor only)</li>
+</ul>
+
+<p><strong>URL Parameters:</strong></p>
+
+<ul>
+<li><code>id</code>: Booking ID</li>
+</ul>
+
+<p><strong>Request Body:</strong></p>
+
+<p><code>json
+{
+  "status": string  // Required: "confirmed", "cancelled", or "completed"
+}
+</code></p>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "message": "Booking {status} successfully",
+  "data": {
+    "_id": string,
+    "clientId": string,
+    "vendorId": string,
+    "serviceId": string,
+    "date": string,
+    "time": string,
+    "location": string,
+    "guests": number,
+    "status": string,
+    "paymentStatus": string,
+    "createdAt": string,
+    "updatedAt": string
+  }
+}
+</code></p>
+
+<h3>Cancel Booking (Client)</h3>
+
+<p><strong>Endpoint:</strong> <code>PUT /api/bookings/:id/cancel</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token (client only)</li>
+</ul>
+
+<p><strong>URL Parameters:</strong></p>
+
+<ul>
+<li><code>id</code>: Booking ID</li>
+</ul>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "message": "Booking cancelled successfully",
+  "data": {
+    "_id": string,
+    "clientId": string,
+    "vendorId": string,
+    "serviceId": string,
+    "date": string,
+    "time": string,
+    "location": string,
+    "guests": number,
+    "status": "cancelled",
+    "paymentStatus": string,
+    "createdAt": string,
+    "updatedAt": string
+  }
+}
+</code></p>
+
+<h2>6. Chat</h2>
+
+<h3>Send a Message</h3>
+
+<p><strong>Endpoint:</strong> <code>POST /api/chats</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token</li>
+</ul>
+
+<p><strong>Request Body:</strong></p>
+
+<p><code>json
+{
+  "bookingId": string,  // Required: Booking ID
+  "message": string     // Required: Message content
+}
+</code></p>
+
+<p><strong>Response (201):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "message": "Message sent successfully",
+  "data": {
+    "_id": string,
+    "bookingId": string,
+    "senderId": string,
+    "receiverId": string,
+    "message": string,
+    "read": boolean,
+    "createdAt": string,
+    "updatedAt": string
+  }
+}
+</code></p>
+
+<h3>Get Chat Messages for a Booking</h3>
+
+<p><strong>Endpoint:</strong> <code>GET /api/chats/:bookingId</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token</li>
+</ul>
+
+<p><strong>URL Parameters:</strong></p>
+
+<ul>
+<li><code>bookingId</code>: Booking ID</li>
+</ul>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "count": number,
+  "data": [
+    {
+      "_id": string,
+      "bookingId": string,
+      "senderId": string,
+      "receiverId": string,
+      "message": string,
+      "read": boolean,
+      "createdAt": string,
+      "updatedAt": string,
+      "sender": {
+        "fullName": string,
+        "photoUrl": string
+      }
+    }
+  ]
+}
+</code></p>
+
+<h3>Get Unread Message Count</h3>
+
+<p><strong>Endpoint:</strong> <code>GET /api/chats/unread</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token</li>
+</ul>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "data": {
+    "unreadCount": number
+  }
+}
+</code></p>
+
+<h2>7. Reviews</h2>
+
+<h3>Create a Review</h3>
+
+<p><strong>Endpoint:</strong> <code>POST /api/reviews</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token (client only)</li>
+</ul>
+
+<p><strong>Request Body:</strong></p>
+
+<p><code>json
+{
+  "bookingId": string,  // Required: Booking ID
+  "rating": number,     // Required: Rating (1-5)
+  "comment": string     // Optional: Review comment
+}
+</code></p>
+
+<p><strong>Response (201):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "message": "Review created successfully",
+  "data": {
+    "_id": string,
+    "clientId": string,
+    "vendorId": string,
+    "bookingId": string,
+    "rating": number,
+    "comment": string,
+    "createdAt": string,
+    "updatedAt": string
+  }
+}
+</code></p>
+
+<h3>Get Vendor Reviews</h3>
+
+<p><strong>Endpoint:</strong> <code>GET /api/reviews/vendor/:vendorId</code></p>
+
+<p><strong>URL Parameters:</strong></p>
+
+<ul>
+<li><code>vendorId</code>: Vendor ID</li>
+</ul>
+
+<p><strong>Query Parameters:</strong></p>
+
+<ul>
+<li><code>page</code>: Page number (default: 1)</li>
+<li><code>limit</code>: Results per page (default: 10)</li>
+</ul>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "count": number,
+  "total": number,
+  "pagination": {
+    "page": number,
+    "limit": number,
+    "pages": number
+  },
+  "data": [
+    {
+      "_id": string,
+      "clientId": string,
+      "vendorId": string,
+      "bookingId": string,
+      "rating": number,
+      "comment": string,
+      "createdAt": string,
+      "updatedAt": string,
+      "client": {
+        "fullName": string,
+        "photoUrl": string
+      },
+      "service": {
+        "title": string
+      }
+    }
+  ]
+}
+</code></p>
+
+<h3>Get Client Reviews</h3>
+
+<p><strong>Endpoint:</strong> <code>GET /api/reviews/client</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token (client only)</li>
+</ul>
+
+<p><strong>Query Parameters:</strong></p>
+
+<ul>
+<li><code>page</code>: Page number (default: 1)</li>
+<li><code>limit</code>: Results per page (default: 10)</li>
+</ul>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "count": number,
+  "total": number,
+  "pagination": {
+    "page": number,
+    "limit": number,
+    "pages": number
+  },
+  "data": [
+    {
+      "_id": string,
+      "clientId": string,
+      "vendorId": string,
+      "bookingId": string,
+      "rating": number,
+      "comment": string,
+      "createdAt": string,
+      "updatedAt": string,
+      "service": {
+        "title": string
+      },
+      "vendor": {
+        "businessName": string,
+        "user": {
+          "fullName": string
+        }
+      }
+    }
+  ]
+}
+</code></p>
+
+<h3>Update a Review</h3>
+
+<p><strong>Endpoint:</strong> <code>PUT /api/reviews/:id</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token (client only)</li>
+</ul>
+
+<p><strong>URL Parameters:</strong></p>
+
+<ul>
+<li><code>id</code>: Review ID</li>
+</ul>
+
+<p><strong>Request Body:</strong></p>
+
+<p><code>json
+{
+  "rating": number,    // Optional: Updated rating (1-5)
+  "comment": string    // Optional: Updated comment
+}
+</code></p>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "message": "Review updated successfully",
+  "data": {
+    "_id": string,
+    "clientId": string,
+    "vendorId": string,
+    "bookingId": string,
+    "rating": number,
+    "comment": string,
+    "createdAt": string,
+    "updatedAt": string
+  }
+}
+</code></p>
+
+<h3>Delete a Review</h3>
+
+<p><strong>Endpoint:</strong> <code>DELETE /api/reviews/:id</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token (client or admin)</li>
+</ul>
+
+<p><strong>URL Parameters:</strong></p>
+
+<ul>
+<li><code>id</code>: Review ID</li>
+</ul>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "message": "Review deleted successfully"
+}
+</code></p>
+
+<h2>8. Payments</h2>
+
+<h3>Initialize Payment</h3>
+
+<p><strong>Endpoint:</strong> <code>POST /api/payments/initialize</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token (client only)</li>
+</ul>
+
+<p><strong>Request Body:</strong></p>
+
+<p><code>json
+{
+  "bookingId": string,  // Required: Booking ID
+  "method": string      // Required: "paystack", "palmpay", or "opay"
+}
+</code></p>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "message": "Payment initialized",
+  "data": {
+    "reference": string,
+    "amount": number,
+    "paymentUrl": string
+  }
+}
+</code></p>
+
+<h3>Verify Payment</h3>
+
+<p><strong>Endpoint:</strong> <code>GET /api/payments/verify/:reference</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token (client only)</li>
+</ul>
+
+<p><strong>URL Parameters:</strong></p>
+
+<ul>
+<li><code>reference</code>: Payment reference</li>
+</ul>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "message": "Payment verified successfully",
+  "data": {
+    "booking": {
+      "_id": string,
+      "status": string,
+      "paymentStatus": "paid"
+    },
+    "transaction": {
+      "_id": string,
+      "bookingId": string,
+      "amount": number,
+      "method": string,
+      "reference": string
+    }
+  }
+}
+</code></p>
+
+<h3>Get Payment History</h3>
+
+<p><strong>Endpoint:</strong> <code>GET /api/payments/history</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token (client only)</li>
+</ul>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "count": number,
+  "data": [
+    {
+      "_id": string,
+      "bookingId": string,
+      "amount": number,
+      "method": string,
+      "escrowHeld": boolean,
+      "releasedToVendor": boolean,
+      "reference": string,
+      "createdAt": string,
+      "updatedAt": string,
+      "booking": {
+        "status": string,
+        "date": string,
+        "time": string
+      },
+      "service": {
+        "title": string
+      },
+      "vendor": {
+        "businessName": string
+      }
+    }
+  ]
+}
+</code></p>
+
+<h3>Get Transaction by ID</h3>
+
+<p><strong>Endpoint:</strong> <code>GET /api/payments/:id</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token</li>
+</ul>
+
+<p><strong>URL Parameters:</strong></p>
+
+<ul>
+<li><code>id</code>: Transaction ID</li>
+</ul>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "data": {
+    "transaction": {
+      "_id": string,
+      "bookingId": string,
+      "amount": number,
+      "method": string,
+      "escrowHeld": boolean,
+      "releasedToVendor": boolean,
+      "reference": string,
+      "createdAt": string,
+      "updatedAt": string
+    },
+    "booking": {
+      "_id": string,
+      "status": string,
+      "date": string,
+      "time": string
+    },
+    "service": {
+      "title": string,
+      "price": number
+    }
+  }
+}
+</code></p>
+
+<h2>9. Notifications</h2>
+
+<h3>Get User Notifications</h3>
+
+<p><strong>Endpoint:</strong> <code>GET /api/notifications</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token</li>
+</ul>
+
+<p><strong>Query Parameters:</strong></p>
+
+<ul>
+<li><code>page</code>: Page number (default: 1)</li>
+<li><code>limit</code>: Results per page (default: 10)</li>
+</ul>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "count": number,
+  "total": number,
+  "unreadCount": number,
+  "pagination": {
+    "page": number,
+    "limit": number,
+    "pages": number
+  },
+  "data": [
+    {
+      "_id": string,
+      "userId": string,
+      "type": string,
+      "message": string,
+      "read": boolean,
+      "relatedId": string,
+      "onModel": string,
+      "createdAt": string,
+      "updatedAt": string
+    }
+  ]
+}
+</code></p>
+
+<h3>Mark Notification as Read</h3>
+
+<p><strong>Endpoint:</strong> <code>PUT /api/notifications/:id/read</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token</li>
+</ul>
+
+<p><strong>URL Parameters:</strong></p>
+
+<ul>
+<li><code>id</code>: Notification ID</li>
+</ul>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "message": "Notification marked as read",
+  "data": {
+    "_id": string,
+    "userId": string,
+    "type": string,
+    "message": string,
+    "read": true,
+    "relatedId": string,
+    "onModel": string,
+    "createdAt": string,
+    "updatedAt": string
+  }
+}
+</code></p>
+
+<h3>Mark All Notifications as Read</h3>
+
+<p><strong>Endpoint:</strong> <code>PUT /api/notifications/read-all</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token</li>
+</ul>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "message": "All notifications marked as read"
+}
+</code></p>
+
+<h3>Delete Notification</h3>
+
+<p><strong>Endpoint:</strong> <code>DELETE /api/notifications/:id</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token</li>
+</ul>
+
+<p><strong>URL Parameters:</strong></p>
+
+<ul>
+<li><code>id</code>: Notification ID</li>
+</ul>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "message": "Notification deleted successfully"
+}
+</code></p>
+
+<h2>10. Referrals</h2>
+
+<h3>Get User Referrals</h3>
+
+<p><strong>Endpoint:</strong> <code>GET /api/referrals</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token</li>
+</ul>
+
+<p><strong>Query Parameters:</strong></p>
+
+<ul>
+<li><code>page</code>: Page number (default: 1)</li>
+<li><code>limit</code>: Results per page (default: 10)</li>
+</ul>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "count": number,
+  "total": number,
+  "pagination": {
+    "page": number,
+    "limit": number,
+    "pages": number
+  },
+  "data": [
+    {
+      "_id": string,
+      "referrerId": string,
+      "referredId": string,
+      "rewardGranted": boolean,
+      "createdAt": string,
+      "updatedAt": string,
+      "referredUser": {
+        "fullName": string,
+        "email": string,
+        "createdAt": string
+      }
+    }
+  ]
+}
+</code></p>
+
+<h3>Get Referral Stats</h3>
+
+<p><strong>Endpoint:</strong> <code>GET /api/referrals/stats</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token</li>
+</ul>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "data": {
+    "totalReferrals": number,
+    "rewardedReferrals": number,
+    "pendingReferrals": number
+  }
+}
+</code></p>
+
+<h3>Grant Referral Reward</h3>
+
+<p><strong>Endpoint:</strong> <code>PUT /api/referrals/:id/reward</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token (admin only)</li>
+</ul>
+
+<p><strong>URL Parameters:</strong></p>
+
+<ul>
+<li><code>id</code>: Referral ID</li>
+</ul>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "message": "Referral reward granted successfully",
+  "data": {
+    "_id": string,
+    "referrerId": string,
+    "referredId": string,
+    "rewardGranted": true,
+    "createdAt": string,
+    "updatedAt": string
+  }
+}
+</code></p>
+
+<h2>11. Admin</h2>
+
+<h3>Get Admin Dashboard Stats</h3>
+
+<p><strong>Endpoint:</strong> <code>GET /api/admin/dashboard</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token (admin only)</li>
+</ul>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "data": {
+    "users": {
+      "total": number,
+      "clients": number,
+      "vendors": number
+    },
+    "vendors": {
+      "verified": number,
+      "pending": number
+    },
+    "services": {
+      "total": number
+    },
+    "bookings": {
+      "total": number,
+      "pending": number,
+      "confirmed": number,
+      "completed": number,
+      "cancelled": number
+    },
+    "revenue": {
+      "total": number,
+      "escrowHeld": number
+    }
+  }
+}
+</code></p>
+
+<h3>Get All Users</h3>
+
+<p><strong>Endpoint:</strong> <code>GET /api/admin/users</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token (admin only)</li>
+</ul>
+
+<p><strong>Query Parameters:</strong></p>
+
+<ul>
+<li><code>role</code>: Filter by role (client, vendor, admin)</li>
+<li><code>status</code>: Filter by account status (active, suspended, banned)</li>
+<li><code>page</code>: Page number (default: 1)</li>
+<li><code>limit</code>: Results per page (default: 10)</li>
+</ul>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "count": number,
+  "total": number,
+  "pagination": {
+    "page": number,
+    "limit": number,
+    "pages": number
+  },
+  "data": [
+    {
+      "_id": string,
+      "email": string,
+      "fullName": string,
+      "role": string,
+      "accountStatus": string,
+      "emailVerified": boolean,
+      "createdAt": string,
+      "updatedAt": string
+    }
+  ]
+}
+</code></p>
+
+<h3>Get User by ID</h3>
+
+<p><strong>Endpoint:</strong> <code>GET /api/admin/users/:id</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token (admin only)</li>
+</ul>
+
+<p><strong>URL Parameters:</strong></p>
+
+<ul>
+<li><code>id</code>: User ID</li>
+</ul>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "data": {
+    "user": {
+      "_id": string,
+      "email": string,
+      "fullName": string,
+      "role": string,
+      "accountStatus": string,
+      "emailVerified": boolean,
+      "createdAt": string,
+      "updatedAt": string
+    },
+    "vendorProfile": object | null,
+    "bookings": [
+      {
+        "_id": string,
+        "status": string,
+        "date": string,
+        "createdAt": string
+      }
+    ],
+    "transactions": [
+      {
+        "_id": string,
+        "amount": number,
+        "method": string,
+        "createdAt": string
+      }
+    ]
+  }
+}
+</code></p>
+
+<h3>Update User Status</h3>
+
+<p><strong>Endpoint:</strong> <code>PUT /api/admin/users/:id/status</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token (admin only)</li>
+</ul>
+
+<p><strong>URL Parameters:</strong></p>
+
+<ul>
+<li><code>id</code>: User ID</li>
+</ul>
+
+<p><strong>Request Body:</strong></p>
+
+<p><code>json
+{
+  "status": string  // Required: "active", "suspended", or "banned"
+}
+</code></p>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "message": "User status updated to {status}",
+  "data": {
+    "_id": string,
+    "email": string,
+    "fullName": string,
+    "role": string,
+    "accountStatus": string
+  }
+}
+</code></p>
+
+<h3>Verify Vendor</h3>
+
+<p><strong>Endpoint:</strong> <code>PUT /api/admin/vendors/:id/verify</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token (admin only)</li>
+</ul>
+
+<p><strong>URL Parameters:</strong></p>
+
+<ul>
+<li><code>id</code>: Vendor ID</li>
+</ul>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "message": "Vendor verified successfully",
+  "data": {
+    "_id": string,
+    "userId": string,
+    "businessName": string,
+    "verified": true,
+    "createdAt": string,
+    "updatedAt": string
+  }
+}
+</code></p>
+
+<h3>Get Pending Vendors</h3>
+
+<p><strong>Endpoint:</strong> <code>GET /api/admin/vendors/pending</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token (admin only)</li>
+</ul>
+
+<p><strong>Query Parameters:</strong></p>
+
+<ul>
+<li><code>page</code>: Page number (default: 1)</li>
+<li><code>limit</code>: Results per page (default: 10)</li>
+</ul>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "count": number,
+  "total": number,
+  "pagination": {
+    "page": number,
+    "limit": number,
+    "pages": number
+  },
+  "data": [
+    {
+      "_id": string,
+      "userId": string,
+      "businessName": string,
+      "bio": string,
+      "logoUrl": string,
+      "certificationUrls": string[],
+      "verified": false,
+      "createdAt": string,
+      "updatedAt": string,
+      "user": {
+        "fullName": string,
+        "email": string,
+        "photoUrl": string
+      }
+    }
+  ]
+}
+</code></p>
+
+<h3>Release Funds from Escrow</h3>
+
+<p><strong>Endpoint:</strong> <code>PUT /api/admin/transactions/:id/release</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token (admin only)</li>
+</ul>
+
+<p><strong>URL Parameters:</strong></p>
+
+<ul>
+<li><code>id</code>: Transaction ID</li>
+</ul>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "message": "Funds released successfully",
+  "data": {
+    "_id": string,
+    "bookingId": string,
+    "amount": number,
+    "method": string,
+    "escrowHeld": false,
+    "releasedToVendor": true,
+    "reference": string,
+    "createdAt": string,
+    "updatedAt": string
+  }
+}
+</code></p>
+
+<h3>Get All Transactions</h3>
+
+<p><strong>Endpoint:</strong> <code>GET /api/admin/transactions</code></p>
+
+<p><strong>Headers:</strong></p>
+
+<ul>
+<li><code>Authorization</code>: Bearer token (admin only)</li>
+</ul>
+
+<p><strong>Query Parameters:</strong></p>
+
+<ul>
+<li><code>method</code>: Filter by payment method</li>
+<li><code>escrowHeld</code>: Filter by escrow status (true/false)</li>
+<li><code>releasedToVendor</code>: Filter by release status (true/false)</li>
+<li><code>page</code>: Page number (default: 1)</li>
+<li><code>limit</code>: Results per page (default: 10)</li>
+</ul>
+
+<p><strong>Response (200):</strong></p>
+
+<p><code>json
+{
+  "success": true,
+  "count": number,
+  "total": number,
+  "pagination": {
+    "page": number,
+    "limit": number,
+    "pages": number
+  },
+  "data": [
+    {
+      "_id": string,
+      "bookingId": string,
+      "amount": number,
+      "method": string,
+      "escrowHeld": boolean,
+      "releasedToVendor": boolean,
+      "reference": string,
+      "createdAt": string,
+      "updatedAt": string,
+      "booking": {
+        "status": string,
+        "date": string,
+        "time": string
+      },
+      "client": {
+        "fullName": string,
+        "email": string
+      },
+      "vendor": {
+        "businessName": string,
+        "user": {
+          "fullName": string,
+          "email": string
+        }
+      }
+    }
+  ]
+}
+</code></p>
+
+<h2>Error Responses</h2>
+
+<p>All API endpoints return standardized error responses:</p>
+
+<p><strong>400 Bad Request:</strong></p>
+
+<p><code>json
+{
+  "success": false,
+  "message": "Error message describing the issue",
+  "errors": ["Detailed error information"] // Optional
+}
+</code></p>
+
+<p><strong>401 Unauthorized:</strong></p>
+
+<p><code>json
+{
+  "success": false,
+  "message": "Not authorized, token failed"
+}
+</code></p>
+
+<p><strong>403 Forbidden:</strong></p>
+
+<p><code>json
+{
+  "success": false,
+  "message": "Not authorized to access this resource"
+}
+</code></p>
+
+<p><strong>404 Not Found:</strong></p>
+
+<p><code>json
+{
+  "success": false,
+  "message": "Resource not found"
+}
+</code></p>
+
+<p><strong>500 Server Error:</strong></p>
+
+<p><code>json
+{
+  "success": false,
+  "message": "Internal Server Error"
+}
+</code></p>
+
+<h2>Rate Limiting</h2>
+
+<p>The API implements rate limiting to prevent abuse:</p>
+
+<ul>
+<li>General endpoints: 100 requests per 15 minutes</li>
+<li>Authentication endpoints: 5 requests per 15 minutes</li>
+</ul>
+
+<p>When rate limits are exceeded, the API returns:</p>
+
+<p><code>json
+{
+  "success": false,
+  "message": "Too many requests from this IP, please try again later."
+}
+</code></p>
+</div></body></html>
