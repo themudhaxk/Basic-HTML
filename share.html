@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vabit Media Share</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      text-align: center;
+    }
+    .container {
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      max-width: 400px;
+      width: 90%;
+    }
+    h1 {
+      color: #333;
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    p {
+      color: #666;
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+    button {
+      background-color: #6200ea;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #3700b3;
+    }
+    .error {
+      color: red;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Share Vabit Media</h1>
+    <p>Click the button below to view this media in the Vabit app.</p>
+    <button onclick="redirectToApp()">Open in Vabit</button>
+    <p id="error" class="error" style="display: none;"></p>
+  </div>
+
+  <script>
+    function getQueryParam(param) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(param);
+    }
+
+    function redirectToApp() {
+      const appUrl = getQueryParam('appUrl');
+      const errorElement = document.getElementById('error');
+
+      if (!appUrl) {
+        errorElement.textContent = 'Invalid share link. No app URL provided.';
+        errorElement.style.display = 'block';
+        return;
+      }
+
+      // Attempt to redirect to the app
+      window.location.href = appUrl;
+
+      // Fallback: Show error after a short delay if the app doesn't open
+      setTimeout(() => {
+        errorElement.textContent = 'Unable to open the Vabit app. Please ensure it is installed.';
+        errorElement.style.display = 'block';
+      }, 1000);
+    }
+
+    // Automatically attempt redirect on page load
+    window.onload = function() {
+      redirectToApp();
+    };
+  </script>
+</body>
+</html>
