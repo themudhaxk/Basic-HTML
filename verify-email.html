@@ -143,7 +143,7 @@
       try {
         // const res = await fetch(`/auth/verify-email/${token}`);
         // const res = await fetch(`https://ctserv-server.onrender.com/auth/verify-email/${token}`);
-        const res = await fetch(`https://ctserv-server.onrender.com/auth/${token}`);
+        const res = await fetch(`https://ctserv-server.onrender.com/api/auth/${token}`);
         const data = await res.json();
 
         if (data.success) {
