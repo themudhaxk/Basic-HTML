@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Verify Email | CTSERV</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root {
+      --bg-light: #f5f7fa;
+      --bg-dark: #1e1e2f;
+      --text-light: #333;
+      --text-dark: #f1f1f1;
+      --primary: #4f46e5;
+      --success: #22c55e;
+      --error: #ef4444;
+    }
+
+    [data-theme="dark"] {
+      background-color: var(--bg-dark);
+      color: var(--text-dark);
+    }
+
+    [data-theme="light"] {
+      background-color: var(--bg-light);
+      color: var(--text-light);
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 1rem;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    .container {
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+      background-color: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      animation: slideUp 0.6s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    img.logo {
+      max-width: 80px;
+      margin-bottom: 1rem;
+    }
+
+    .status-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .status-message {
+      font-size: 1.2rem;
+      font-weight: 500;
+    }
+
+    .spinner {
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-top: 4px solid var(--primary);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 1.5rem auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .dark-toggle {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      cursor: pointer;
+      font-size: 1.5rem;
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="dark-toggle" onclick="toggleDarkMode()">
+    <i class="fas fa-moon" id="darkIcon"></i>
+  </div>
+
+  <div class="container">
+    <img src="./logo.png" alt="CTSERV Logo" class="logo" />
+    <div id="status">
+      <div class="spinner"></div>
+      <div class="status-message">Verifying your email...</div>
+    </div>
+  </div>
+
+  <script>
+    const statusDiv = document.getElementById('status');
+    const darkIcon = document.getElementById('darkIcon');
+
+    function toggleDarkMode() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      darkIcon.className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+    }
+
+    // async function verifyEmail() {
+    //   const params = new URLSearchParams(window.location.search);
+    //   const token = params.get('token');
+
+    //   if (!token) {
+    //     showError('No token provided');
+    //     return;
+    //   }
+
+    //   try {
+    //     const res = await fetch(`/auth/verify-email/${token}`);
+    //     const data = await res.json();
+
+    //     if (data.success) {
+    //       showSuccess(data.message || 'Email verified successfully!');
+    //     } else {
+    //       showError(data.message || 'Email verification failed.');
+    //     }
+    //   } catch (err) {
+    //     showError('An error occurred during verification.');
+    //   }
+    // }
+
+    async function verifyEmail() {
+      const pathParts = window.location.pathname.split('/');
+      const token = pathParts[pathParts.length - 1];
+    
+      if (!token || token.length < 10) {
+        showError('Invalid or missing token.');
+        return;
+      }
+    
+      try {
+        const res = await fetch(`/auth/verify-email/${token}`);
+        const data = await res.json();
+    
+        if (data.success) {
+          showSuccess(data.message || 'Email verified successfully!');
+        } else {
+          showError(data.message || 'Email verification failed.');
+        }
+      } catch (err) {
+        showError('An error occurred during verification.');
+      }
+    }
+
+
+    function showSuccess(message) {
+      statusDiv.innerHTML = `
+        <div class="status-icon" style="color: var(--success);">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="status-message">${message}</div>
+      `;
+    }
+
+    function showError(message) {
+      statusDiv.innerHTML = `
+        <div class="status-icon" style="color: var(--error);">
+          <i class="fas fa-times-circle"></i>
+        </div>
+        <div class="status-message">${message}</div>
+      `;
+    }
+
+    verifyEmail();
+  </script>
+</body>
+</html>
