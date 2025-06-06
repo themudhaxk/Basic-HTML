@@ -131,28 +131,28 @@
       darkIcon.className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
     }
 
-    async function verifyEmail() {
-      const params = new URLSearchParams(window.location.search);
-      const token = params.get('token');
+    // async function verifyEmail() {
+    //   const params = new URLSearchParams(window.location.search);
+    //   const token = params.get('token');
 
-      if (!token) {
-        showError('No token provided');
-        return;
-      }
+    //   if (!token) {
+    //     showError('No token provided');
+    //     return;
+    //   }
 
-      try {
-        const res = await fetch(`/auth/verify-email/${token}`);
-        const data = await res.json();
+    //   try {
+    //     const res = await fetch(`/auth/verify-email/${token}`);
+    //     const data = await res.json();
 
-        if (data.success) {
-          showSuccess(data.message || 'Email verified successfully!');
-        } else {
-          showError(data.message || 'Email verification failed.');
-        }
-      } catch (err) {
-        showError('An error occurred during verification.');
-      }
-    }
+    //     if (data.success) {
+    //       showSuccess(data.message || 'Email verified successfully!');
+    //     } else {
+    //       showError(data.message || 'Email verification failed.');
+    //     }
+    //   } catch (err) {
+    //     showError('An error occurred during verification.');
+    //   }
+    // }
 
     // async function verifyEmail() {
     //   const pathParts = window.location.pathname.split('/');
@@ -176,6 +176,29 @@
     //     showError('An error occurred during verification.');
     //   }
     // }
+
+    async function verifyEmail() {
+      const pathParts = window.location.pathname.split('/');
+      const token = pathParts[pathParts.length - 1];
+    
+      if (!token || token.length < 10) {
+        showError('Invalid or missing token.');
+        return;
+      }
+    
+      try {
+        const res = await fetch(`https://ctserv-server.onrender.com/auth/verify-email/${token}`);
+        const data = await res.json();
+    
+        if (data.success) {
+          showSuccess(data.message || 'Email verified successfully!');
+        } else {
+          showError(data.message || 'Email verification failed.');
+        }
+      } catch (err) {
+        showError('An error occurred during verification.');
+      }
+    }
 
 
     function showSuccess(message) {
